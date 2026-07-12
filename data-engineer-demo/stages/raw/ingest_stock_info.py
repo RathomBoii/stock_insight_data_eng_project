@@ -1,8 +1,5 @@
 import yfinance as yf
-import json
-import os
 import logging
-from datetime import datetime, timezone
 
 # Variables
 from TICKERS import TICKERS
@@ -10,6 +7,7 @@ from TICKERS import TICKERS
 # Utils
 from utils.construct_raw_data_file_path import construct_raw_data_file_path, DataContext, FileExtention
 from utils.check_existing_raw_data import check_existing_raw_data
+from utils.write_json_file import write_json_file
 
 """
 1.loop through TICKERS
@@ -29,16 +27,6 @@ def ingest_ticker_info(ticker: str) -> dict:
     print(f"Fetching {ticker} info from yfinance...")
     desired_ticker = yf.Ticker(ticker)
     return desired_ticker.info
-
-def write_json_file(data: dict, file_path: str) -> None:
-    # 'with open' acts as a context manager; it automatically closes the file 
-    # safely when the block finishes, preventing memory leaks or data corruption.
-    # "w" is write mode, "r" for read mode
-    data["ingestion_timestamp"] = datetime.now(timezone.utc).isoformat()
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
-
 
 def main():
     """
