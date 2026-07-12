@@ -6,6 +6,7 @@ from enum import Enum
 class DataContext(Enum):
     OHLC = "ohlc"
     INFO = "info"
+    NEWS = "news"
 
 class FileExtention(Enum):
     PARQUET = 'parquet'
