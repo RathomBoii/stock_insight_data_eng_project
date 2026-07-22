@@ -50,7 +50,7 @@ def main():
     """
     DATA_CONTEXT = DataContext.OHLC
     FILE_EXTENTION = FileExtention.PARQUET
-    LOOKBACK_PERIOD = "5y"
+    LOOKBACK_PERIOD = "10y"
 
     for ticker in TICKERS:
         industry   = ticker["industry"]
