@@ -1,7 +1,7 @@
 import apache_beam as beam
 from datetime import datetime
-from domains.stages.persist.entities.raw_ohlc_bar import RawOHLCBar, RawOHLCBarInput
-from domains.stages.persist.entities.ohlc_bar import OHLCBar
+from domains.stages.raw.entities.raw_ohlc_bar import RawOHLCBar, RawOHLCBarInput
+from domains.stages.persist.entities.persist_ohlc_bar import PersistOHLCBar
 
 
 class DictToRawOHLCBar(beam.DoFn):
@@ -21,9 +21,9 @@ class DictToRawOHLCBar(beam.DoFn):
         ))
 
 
-class OHLCBarToRow(beam.DoFn):
+class PersistOHLCBarToRow(beam.DoFn):
     """Enriched domain entity -> dict for the parquet sink."""
-    def process(self, bar: OHLCBar):
+    def process(self, bar: PersistOHLCBar):
         yield {
             "ticker": bar.ticker,
             "trade_date": bar.trade_date,

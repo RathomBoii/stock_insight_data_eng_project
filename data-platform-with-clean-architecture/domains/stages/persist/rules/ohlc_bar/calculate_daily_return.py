@@ -7,8 +7,8 @@ Needs neighbours (previous bar), so it runs after GroupByKey per ticker.
 import apache_beam as beam
 
 from typing import Iterable, Iterator, Tuple
-from domains.stages.persist.entities.raw_ohlc_bar import RawOHLCBar
-from domains.stages.persist.entities.ohlc_bar import OHLCBar, OHLCBarInput
+from domains.stages.raw.entities.raw_ohlc_bar import RawOHLCBar
+from domains.stages.persist.entities.persist_ohlc_bar import PersistOHLCBar, PersistOHLCBarInput
 
 # ! Note both fields data_freshness and daily_return must be set at the same time, so we need to import this function too
 from .calculate_data_freshness import calculate_data_freshness
@@ -16,7 +16,7 @@ from .calculate_data_freshness import calculate_data_freshness
 
 class CalculateDailyReturn(beam.DoFn):
 
-    def process(self, element: Tuple[str, Iterable[RawOHLCBar]]) -> Iterator[OHLCBar]:
+    def process(self, element: Tuple[str, Iterable[RawOHLCBar]]) -> Iterator[PersistOHLCBar]:
         """
         1. receive (ticker, [RawOHLCBar, ...])
         2. sort by trade_date
@@ -37,7 +37,7 @@ class CalculateDailyReturn(beam.DoFn):
                 else None
             )
 
-            yield OHLCBar(OHLCBarInput(
+            yield PersistOHLCBar(PersistOHLCBarInput(
                 ticker=bar.ticker,
                 trade_date=bar.trade_date,
                 open=bar.open,

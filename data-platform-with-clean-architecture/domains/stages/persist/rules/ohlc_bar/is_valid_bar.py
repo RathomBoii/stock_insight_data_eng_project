@@ -1,4 +1,4 @@
-from domains.stages.persist.entities.raw_ohlc_bar import RawOHLCBar
+from domains.stages.raw.entities.raw_ohlc_bar import RawOHLCBar
 
 
 def is_valid_bar(bar: RawOHLCBar) -> bool:

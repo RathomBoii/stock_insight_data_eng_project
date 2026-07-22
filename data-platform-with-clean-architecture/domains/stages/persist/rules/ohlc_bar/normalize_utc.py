@@ -1,5 +1,5 @@
 from datetime import timezone
-from domains.stages.persist.entities.raw_ohlc_bar import RawOHLCBar, RawOHLCBarInput
+from domains.stages.raw.entities.raw_ohlc_bar import RawOHLCBar, RawOHLCBarInput
 
 
 def normalize_utc(bar: RawOHLCBar) -> RawOHLCBar:

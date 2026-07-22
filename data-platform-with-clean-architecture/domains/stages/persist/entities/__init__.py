@@ -1,11 +1,11 @@
 from .news_article import NewsArticle
-from .ohlc_bar import OHLCBar
+from .persist_ohlc_bar import PersistOHLCBar
 from .ticker_profile import TickerProfile
 from .ticker import Ticker
 
 __all__ = [
     "NewsArticle",
-    "OHLCBar",
+    "PersistOHLCBar",
     "TickerProfile",
     "Ticker"
     ]
