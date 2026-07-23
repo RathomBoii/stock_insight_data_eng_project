@@ -1,0 +1,15 @@
+# Build + push this pipeline's image with context = repo root.
+# Run from repo root:
+#   gcloud builds submit --config entrypoints/clean_ohlc_from_raw_to_persist/cloudbuild.yaml \
+#     --substitutions _IMAGE=<IMAGE> .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - entrypoints/clean_ohlc_from_raw_to_persist/Dockerfile
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}

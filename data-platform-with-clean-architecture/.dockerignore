@@ -1,0 +1,14 @@
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+.git/
+.gitignore
+**/*.parquet
+**/*.json.gz
+cleaned_ohlc_persist/
+cleaned/
+*.md
+tests/
+.env
+*.secret

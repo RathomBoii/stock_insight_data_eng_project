@@ -1,0 +1,13 @@
+# Controls what gcloud builds submit uploads as build context.
+# (docker COPY still honors .dockerignore too.)
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+.git/
+**/*.parquet
+cleaned_ohlc_persist/
+cleaned/
+tests/
+.env
+*.secret
