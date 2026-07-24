@@ -17,9 +17,14 @@ COPY --from=launcher /opt/google/dataflow/python_template_launcher /opt/google/d
 # Context is repo root, so this copies the whole project tree.
 COPY . ${WORKDIR}/
 
+# Put the repo root on the launcher import path. Worker imports are provided by
+# the package staged from FLEX_TEMPLATE_PYTHON_SETUP_FILE below.
+ENV PYTHONPATH="${WORKDIR}"
+
 # Paths are relative to WORKDIR (= repo root inside the image).
 ENV FLEX_TEMPLATE_PYTHON_PY_FILE="${WORKDIR}/entrypoints/clean_ohlc_from_raw_to_persist/clean_ohlc_from_raw_to_persist.py"
 ENV FLEX_TEMPLATE_PYTHON_REQUIREMENTS_FILE="${WORKDIR}/entrypoints/clean_ohlc_from_raw_to_persist/requirements.txt"
+ENV FLEX_TEMPLATE_PYTHON_SETUP_FILE="${WORKDIR}/setup.py"
 
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r ${FLEX_TEMPLATE_PYTHON_REQUIREMENTS_FILE}

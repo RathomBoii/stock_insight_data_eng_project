@@ -27,15 +27,17 @@ image hosts use the repository's **region**, not its repository name.
 
 ```bash
 export GCP_PROJECT="ntt-test-data-bq-looker"
-export REGION="asia-southeast1"
+export DATAFLOW_REGION="asia-southeast3"
+export ARTIFACT_REGISTRY_REGION="asia-southeast1"
 export ARTIFACT_REGISTRY_REPO="dataflow-demo-registry"
 export PIPELINE_IMAGE_NAME="clean-ohlc-python"
 export PIPELINE_IMAGE_TAG="latest"
 export PIPELINE_NAME="clean-ohlc"
 export GCS_BUCKET="ntt-dataflow-demo-storage"
+export MACHINE_TYPE="n4-standard-2"
 ```
 ```bash
-export IMAGE="${REGION}-docker.pkg.dev/${GCP_PROJECT}/${ARTIFACT_REGISTRY_REPO}/${PIPELINE_IMAGE_NAME}:${PIPELINE_IMAGE_TAG}"
+export IMAGE="${ARTIFACT_REGISTRY_REGION}-docker.pkg.dev/${GCP_PROJECT}/${ARTIFACT_REGISTRY_REPO}/${PIPELINE_IMAGE_NAME}:${PIPELINE_IMAGE_TAG}"
 ```
 ```bash
 export TEMPLATE_SPEC="gs://${GCS_BUCKET}/templates/${PIPELINE_NAME}/spec.json"
@@ -63,20 +65,24 @@ gcloud builds submit \
 Alternatively, build and push with local Docker:
 
 ```bash
-gcloud auth configure-docker "${REGION}-docker.pkg.dev"
+gcloud auth configure-docker "${ARTIFACT_REGISTRY_REGION}-docker.pkg.dev"
 ```
 ```bash
-docker build \
+docker buildx build \
+  --platform linux/amd64 \
   --file entrypoints/clean_ohlc_from_raw_to_persist/Dockerfile \
   --tag "$IMAGE" \
+  --push \
   .
-```
-```bash
-docker push "$IMAGE"
+
 ```
 
 The build context must be the repository root because the image includes the
 shared `domains`, `infrastructures`, and `usecases` packages.
+
+Dataflow launcher VMs use `linux/amd64`. Images built on an Apple Silicon Mac
+without `--platform linux/amd64` fail with `no matching manifest for
+linux/amd64`.
 
 ## 3. Build the Flex Template specification
 
@@ -101,14 +107,60 @@ prefix required by the pipeline:
 gcloud dataflow flex-template run "${PIPELINE_NAME}-$(date +%Y%m%d-%H%M%S)" \
   --template-file-gcs-location "$TEMPLATE_SPEC" \
   --project "$GCP_PROJECT" \
-  --region "$REGION" \
+  --region "$DATAFLOW_REGION" \
   --temp-location "gs://${GCS_BUCKET}/temp" \
   --staging-location "gs://${GCS_BUCKET}/staging" \
-  --parameters "source_path=gs://${GCS_BUCKET}/stages/raw/raw/ohlc/**/data.parquet,output_path=gs://${GCS_BUCKET}/stages/persist/ohlc/part"
+  --worker-machine-type "n4-standard-2" \
+  --launcher-machine-type "n4-standard-2" \
+  --service-account-email "dataflow-demo-runner@${GCP_PROJECT}.iam.gserviceaccount.com" \
+  --parameters "source_path=gs://${GCS_BUCKET}/stages/raw/ohlc/ticker=AMZN/ingestion_date=2026-07-14/data.parquet" \
+  --parameters "output_path=gs://${GCS_BUCKET}/stages/persist/ohlc/ticker=AMZN/part"
+
 ```
+
 
 Dataflow appends shard suffixes to the output prefix. A successful run produces
 files similar to `part-00000-of-00001.parquet` under the persist path.
+
+## Known launcher issue in Bangkok
+
+During testing, a Flex Template launcher running in `asia-southeast3` could not
+authenticate when the template image was also stored at
+`asia-southeast3-docker.pkg.dev`. The launcher did not provide Docker registry
+credentials for that endpoint, so Artifact Registry treated the image pull as
+an anonymous request and rejected it:
+
+```text
+Credentials not provided. Not logging into Docker private registry.
+Unauthenticated requests do not have permission
+"artifactregistry.repositories.downloadArtifacts"
+```
+
+This occurred even though the launcher VM had the intended service account,
+the `cloud-platform` OAuth scope, and Artifact Registry access. Therefore, the
+problem was not a missing IAM role or a general lack of Artifact Registry
+support in Bangkok. It was an observed authentication integration failure
+between the Dataflow Flex Template launcher and the Bangkok registry endpoint
+in this environment. Until that behavior is resolved, this project cannot use
+the Bangkok registry for its launcher image. Storing the image in
+`asia-southeast1` while continuing to run Dataflow in `asia-southeast3`
+resolved the image pull.
+
+After changing the image location or tag, rebuild the Flex Template
+specification. Otherwise, Dataflow continues using the old image reference:
+
+```bash
+gcloud dataflow flex-template build "$TEMPLATE_SPEC" \
+  --image "$IMAGE" \
+  --sdk-language PYTHON \
+  --metadata-file "$METADATA_FILE"
+```
+
+Verify the image reference before launching:
+
+```bash
+gcloud storage cat "$TEMPLATE_SPEC"
+```
 
 ## Pipeline parameters
 
