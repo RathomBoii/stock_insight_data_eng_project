@@ -1,0 +1,48 @@
+main:
+  params: [input]
+  steps:
+    - normalizeInput:
+        switch:
+          - condition: '${input == null}'
+            assign:
+              - input: {}
+    - configure:
+        assign:
+          - projectId: ntt-test-data-bq-looker
+          - dataflowRegion: asia-southeast3
+          - bucket: ntt-dataflow-demo-storage
+          - templateSpec: gs://ntt-dataflow-demo-storage/templates/clean-ohlc/spec.json
+          - dataflowServiceAccount: dataflow-demo-runner@ntt-test-data-bq-looker.iam.gserviceaccount.com
+          - ticker: '${default(map.get(input, "ticker"), "AMZN")}'
+          - ingestionDate: '${default(map.get(input, "ingestionDate"), text.substring(time.format(sys.now() - 86400, "Asia/Bangkok"), 0, 10))}'
+          - jobName: '${"clean-ohlc-" + string(int(sys.now()))}'
+    - buildPaths:
+        assign:
+          - sourcePath: '${"gs://" + bucket + "/stages/raw/ohlc/ticker=" + ticker + "/ingestion_date=" + ingestionDate + "/data.parquet"}'
+          - outputPath: '${"gs://" + bucket + "/stages/persist/ohlc/ticker=" + ticker + "/ingestion_date=" + ingestionDate + "/part"}'
+    - launchDataflow:
+        call: googleapis.dataflow.v1b3.projects.locations.flexTemplates.launch
+        args:
+          projectId: '${projectId}'
+          location: '${dataflowRegion}'
+          body:
+            launchParameter:
+              jobName: '${jobName}'
+              containerSpecGcsPath: '${templateSpec}'
+              parameters:
+                source_path: '${sourcePath}'
+                output_path: '${outputPath}'
+              environment:
+                tempLocation: '${"gs://" + bucket + "/temp"}'
+                stagingLocation: '${"gs://" + bucket + "/staging"}'
+                machineType: n4-standard-2
+                launcherMachineType: n4-standard-2
+                serviceAccountEmail: '${dataflowServiceAccount}'
+        result: launchResult
+    - returnLaunchResult:
+        return:
+          jobName: '${jobName}'
+          ingestionDate: '${ingestionDate}'
+          sourcePath: '${sourcePath}'
+          outputPath: '${outputPath}'
+          dataflowResponse: '${launchResult}'
