@@ -51,7 +51,15 @@ spark-warehouse/
 .DS_Store
 Thumbs.db
 
-# ── IDE ──────────────────────────────────────────────────
+≈
 .vscode/
 .idea/
 *.swp
+
+
+# ── DATA ───────────────────────────────────────────────────
+*.parquet
+*.csv
+*.json
+*.avro
+*.orc
