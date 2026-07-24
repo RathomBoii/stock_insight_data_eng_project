@@ -14,7 +14,8 @@ main:
           - templateSpec: gs://ntt-dataflow-demo-storage/templates/clean-ohlc/spec.json
           - dataflowServiceAccount: dataflow-demo-runner@ntt-test-data-bq-looker.iam.gserviceaccount.com
           - ticker: '${default(map.get(input, "ticker"), "AMZN")}'
-          - ingestionDate: '${default(map.get(input, "ingestionDate"), text.substring(time.format(sys.now() - 86400, "Asia/Bangkok"), 0, 10))}'
+          # - ingestionDate: '${default(map.get(input, "ingestionDate"), text.substring(time.format(sys.now() - 86400, "Asia/Bangkok"), 0, 10))}'
+          - ingestionDate: '2026-07-14'
           - jobName: '${"clean-ohlc-" + string(int(sys.now()))}'
     - buildPaths:
         assign:
