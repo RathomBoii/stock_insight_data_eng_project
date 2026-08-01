@@ -236,7 +236,7 @@ Cloud path: Cloud Storage -> Dataflow Flex Template -> Cloud Storage / BigQuery
 The lessons are incremental. Repository-backed lessons use existing code.
 Extension lessons add a small exercise only after its design is understood.
 
-### Lesson 1: Data Product And Quality Contract - Next
+### Lesson 1: Data Product And Quality Contract - Done
 
 **Mode:** repository-backed, read-only.
 
@@ -260,7 +260,7 @@ ingestion timestamp, and three quality invariants without looking them up.
 contract` sections of `data-engineer-demo/README.md`, then answer: "What is one
 OHLC row about, and which timestamp says when the market event happened?"
 
-### Lesson 2: Raw Lake And Partition Design - Not Started
+### Lesson 2: Raw Lake And Partition Design - Next
 
 **Mode:** repository-backed.
 
@@ -542,8 +542,8 @@ and validate the observable result.
 
 | Lesson | Status | Evidence |
 | --- | --- | --- |
-| 1. Data Product And Quality Contract | Next | None yet |
-| 2. Raw Lake And Partition Design | Not Started | None |
+| 1. Data Product And Quality Contract | Done | Stated grain, 2 timestamps, 3 invariants (2026-08-01) |
+| 2. Raw Lake And Partition Design | Next | None |
 | 3. Batch Ingestion And Source Boundaries | Not Started | None |
 | 4. Parquet And Analytical File Layout | Not Started | None |
 | 5. Curation With SQL | Not Started | None |
